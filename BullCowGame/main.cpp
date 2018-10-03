@@ -54,9 +54,9 @@ bool AskToPlayAgain() {
 	std::cout << "Do you want to play again? (Y/N)";
 	std::string Reply = "";
 	getline(std::cin, Reply);
-	if (tolower(Reply[0]) == 'y') return true;
-	else if (tolower(Reply[0]) == 'n') return false;
+	if (tolower(Reply[0]) == 'y') { return true; }
+	else if (tolower(Reply[0]) == 'n') { return false; }
 	else {
-		AskToPlayAgain();
+		return AskToPlayAgain();
 	}
 }
