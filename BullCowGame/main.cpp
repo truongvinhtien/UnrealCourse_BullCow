@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include "FBullCowGame.h"
 
 void PrintIntro();
 void PlayGame();
@@ -9,9 +10,11 @@ bool AskToPlayAgain();
 
 int main()
 {
-	PrintIntro();
+	
 	do
 	{
+		system("CLS");
+		PrintIntro();
 		PlayGame();
 	} while (AskToPlayAgain());
 
@@ -31,6 +34,7 @@ void PrintIntro()
 
 void PlayGame()
 {
+	FBullCowGame BCGame;
 	// Start the game
 	constexpr int NUMBER_OF_TURN = 5;
 	for (int count = 1; count <= NUMBER_OF_TURN; count++) {
@@ -52,10 +56,10 @@ std::string GetGuess() {
 
 bool AskToPlayAgain() {
 	std::cout << "Do you want to play again? (Y/N)";
-	std::string Reply = "";
-	getline(std::cin, Reply);
-	if (tolower(Reply[0]) == 'y') { return true; }
-	else if (tolower(Reply[0]) == 'n') { return false; }
+	std::string Response = "";
+	getline(std::cin, Response);
+	if (tolower(Response[0]) == 'y') { return true; }
+	else if (tolower(Response[0]) == 'n') { return false; }
 	else {
 		return AskToPlayAgain();
 	}
