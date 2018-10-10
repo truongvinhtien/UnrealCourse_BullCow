@@ -1,16 +1,20 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include "FBullCowGame.h"
+
+using FText = std::string;
+using int32 = int;
 
 void PrintIntro();
 void PlayGame();
-std::string GetGuess();
+FText GetGuess();
 bool AskToPlayAgain();
+bool IsIsogram(FText Guess);
+FBullCowGame BCGame;
 
-
-int main()
+int32 main()
 {
-	
 	do
 	{
 		system("CLS");
@@ -26,41 +30,61 @@ int main()
 void PrintIntro()
 {
 	//Introduce the game
-	constexpr int WORD_LENGTH = 5;
 	std::cout << "Welcome to Bulls and Cows, a fun word game." << std::endl;
-	std::cout << "Can you guess the " << WORD_LENGTH << " letter isogram I'm thinking of?" << std::endl;
+	std::cout << "Can you guess the " << BCGame.ReturnHiddenWordLength() << " letter isogram I'm thinking of?" << std::endl;
 	return;
 }
 
 void PlayGame()
 {
-	FBullCowGame BCGame;
+	BCGame.Reset();
 	// Start the game
-	constexpr int NUMBER_OF_TURN = 5;
-	for (int count = 1; count <= NUMBER_OF_TURN; count++) {
-		std::string Guess = GetGuess();
-		std::cout << "Your guess was: " << Guess << std::endl;
+	int32 MAX_TRIES = BCGame.GetMaxTries();
+	for (int32 count = 1; count <= MAX_TRIES; count++) {
+		FText Guess = "";
+		do {
+			Guess = GetGuess();
+		} while (!BCGame.CheckGuessValidity(Guess));
+		FBullCowCount BullCowCount = BCGame.SubmitGuess(Guess);
+		std::cout << "Bulls: " << BullCowCount.Bulls << " & Cows:" << BullCowCount.Cows << std::endl;
 		std::cout << std::endl;
 	}
 }
 
-std::string GetGuess() {
+FText GetGuess() 
+{
 	//Get the guess from player
-	std::string Guess = "";
-	std::cout << "Enter your guess: ";
+	FText Guess = "";
+	std::cout << "Try " << BCGame.GetCurrentTry() << ". Enter your guess: ";
 	getline(std::cin, Guess);
-	//Repeat the guess to player
-
+	int32 GuessLength = Guess.length();
+	for (int32 i = 0; i < GuessLength; i++) {
+		Guess[i] = tolower(Guess[i]);
+	}
+	/*BCGame.IncreaseCurrentTry();*/
 	return Guess;
 }
 
-bool AskToPlayAgain() {
+bool AskToPlayAgain() 
+{
 	std::cout << "Do you want to play again? (Y/N)";
-	std::string Response = "";
+	FText Response = "";
 	getline(std::cin, Response);
 	if (tolower(Response[0]) == 'y') { return true; }
 	else if (tolower(Response[0]) == 'n') { return false; }
 	else {
 		return AskToPlayAgain();
 	}
+}
+
+bool IsIsogram(FText Guess) {
+	int32 length = Guess.length();
+	std::sort(Guess.begin(), Guess.end());
+	for (int32 i = 0; i < length; i++) {
+		if (Guess[i] == Guess[i + 1]) {
+			std::cout << "Your guess is not isogram, please try again" << std::endl;
+			return false;
+		}
+	}
+	return true;
 }
