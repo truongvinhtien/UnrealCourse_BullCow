@@ -1,3 +1,4 @@
+#pragma once
 #include "FBullCowGame.h"
 #include <algorithm>
 #include <iostream>
@@ -9,7 +10,7 @@ FBullCowGame::FBullCowGame()
 
 void FBullCowGame::Reset()
 {
-	constexpr int32 MAX_TRIES = 8;
+	constexpr int32 MAX_TRIES = 3;
 	MyMaxTries = MAX_TRIES;
 	
 	const FString HIDDEN_WORD = "planet";
@@ -17,23 +18,20 @@ void FBullCowGame::Reset()
 		
 	MyCurrentTry = 1;
 	
+	bGameIsWon = false;
+
 	return;
 }
 
-int32 FBullCowGame::GetMaxTries() const
+int32 FBullCowGame::GetMaxTries() const 
 {
-	return MyMaxTries;
+	TMap <int32, int32> WordLengthToMaxtries{ {3,4}, {4,5}, {5,5}, {6,5} };
+	return WordLengthToMaxtries[MyHiddenWord.length()]; 
 }
 
-int32 FBullCowGame::GetCurrentTry() const
-{
-	return MyCurrentTry;
-}
+int32 FBullCowGame::GetCurrentTry() const { return MyCurrentTry; }
 
-int32 FBullCowGame::ReturnHiddenWordLength() const
-{
-	return MyHiddenWord.length();
-}
+int32 FBullCowGame::GetHiddenWordLength() const { return MyHiddenWord.length(); }
 
 void FBullCowGame::IncreaseCurrentTry()
 {
@@ -41,23 +39,34 @@ void FBullCowGame::IncreaseCurrentTry()
 	return;
 }
 
-bool FBullCowGame::CheckGuessValidity(FString Guess)
+bool FBullCowGame::IsGameWon()
+{
+	return bGameIsWon;
+}
+
+EWordStatus FBullCowGame::CheckGuessValidity(FString Guess)
 {
 	int32 GuessLength = Guess.length();
-	int32 HiddenWordLength = ReturnHiddenWordLength();
+	int32 HiddenWordLength = GetHiddenWordLength();
 
 	if (GuessLength != HiddenWordLength) {
 		std::cout << "Your guess has more or less than " << HiddenWordLength << " letter" << std::endl;
-		return false;
+		return EWordStatus::Wrong_Length;
 	}
+	else if (!IsIsogram(Guess)) {
+		std::cout << "Your guess is not isogram, please try again" << std::endl;
+		return EWordStatus::Not_Isogram;
+	}
+	else return EWordStatus::OK;
+}
 
-	int32 length = Guess.length();
-	std::sort(Guess.begin(), Guess.end());
-	for (int32 i = 0; i < length; i++) {
-		if (Guess[i] == Guess[i + 1]) {
-			std::cout << "Your guess is not isogram, please try again" << std::endl;
-			return false;
-		}
+bool FBullCowGame::IsIsogram(FString Guess) const
+{
+	if (Guess.length() <= 1) { return true; }
+	TMap <char, bool> LetterSeen;
+	for (char c : Guess) {
+		if (!LetterSeen[c]) { LetterSeen[c] = true; }
+		else return false;
 	}
 	return true;
 }
@@ -65,18 +74,19 @@ bool FBullCowGame::CheckGuessValidity(FString Guess)
 //receives valid guess, increament turn and return count
 FBullCowCount FBullCowGame::SubmitGuess(FString Guess)
 {
-	IncreaseCurrentTry();
-
+	
 	FBullCowCount BullCowCount;
 
 	for (int32 i = 0; i < Guess.length(); i++) {
-		if (MyHiddenWord.find(Guess[i]) == i) {
-			BullCowCount.Bulls++;
-		}
-		else if (MyHiddenWord.find(Guess[i]) != i) {
-			BullCowCount.Cows++;
-		}
+		int pos = MyHiddenWord.find(Guess[i]);
+		if (pos == i) { BullCowCount.Bulls++; }
+		else if (pos != i && pos != std::string::npos) { BullCowCount.Cows++; }
+	}
+	if (BullCowCount.Bulls == GetHiddenWordLength()) {
+		bGameIsWon = true;
 	}
 
+	IncreaseCurrentTry();
 	return BullCowCount;
 }
+
